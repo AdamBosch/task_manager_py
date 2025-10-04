@@ -1,0 +1,3 @@
+"feed dog":1
+"eat cat":0
+"hamburger":1
