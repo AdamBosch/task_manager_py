@@ -64,9 +64,12 @@ def create_task_row(task, val, root, tasks):
     remove_button.config(command=lambda t=task, c=checkbox, b=remove_button, f=frame: remove_task(t, c, b, f, tasks))
     remove_button.pack(side='right', padx=10)
 
-def create_tab(tab, text_var):
+def create_tab(tab, text_var, text=True):
     label = ttk.Label(tab, text=text_var)
     label.pack(padx=20, pady=20)
+    if text:
+        input_text_area = tk.Text(tab, wrap='word', background='white', foreground='black')
+        input_text_area.pack(fill='both', expand=True, padx=10, pady=10)
 
 def tab_creator(tab_list, parent, notebook):
     popup = tk.Toplevel(parent)

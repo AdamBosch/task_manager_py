@@ -25,9 +25,12 @@ def main():
     notebook.add(ideas_tab, text="Ideas")
     tab_list.extend([todo_tab, ideas_tab])
 
-
     for tab in tab_list:
-        create_tab(tab, notebook.tab(tab, 'text'))
+        tab_name =notebook.tab(tab, 'text')
+        text = True
+        if tab_name == "Todo Checklist":
+            text = False
+        create_tab(tab, tab_name, text)
 
     notebook.pack(padx=10, pady=10, fill="both", expand=True)
     
