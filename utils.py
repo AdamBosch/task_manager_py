@@ -1,5 +1,6 @@
 import tkinter as tk
-from tkinter import font
+from tkinter import font, messagebox
+from tkinter import ttk
 
 def read_tasks(file_path, tasks):
     with open(file_path, "r") as f:
@@ -62,3 +63,41 @@ def create_task_row(task, val, root, tasks):
     remove_button = tk.Button(frame, text="Remove Task")
     remove_button.config(command=lambda t=task, c=checkbox, b=remove_button, f=frame: remove_task(t, c, b, f, tasks))
     remove_button.pack(side='right', padx=10)
+
+def create_tab(tab, text_var):
+    label = ttk.Label(tab, text=text_var)
+    label.pack(padx=20, pady=20)
+
+def tab_creator(tab_list, parent, notebook):
+    popup = tk.Toplevel(parent)
+    popup.title("Create Tab")
+    popup.geometry('300x150')
+    popup.resizable(False, False)
+
+    tk.Label(popup, text="Enter tab name:").pack(pady=10)
+    entry = tk.Entry(popup, width=30)
+    entry.pack(pady=5)
+
+    def confirm():
+        tab_name = entry.get().strip()
+        if not tab_name:
+            messagebox.showerror("Error", "Tab name cannot be empty.")
+            return
+
+        # Create new tab
+        new_tab = ttk.Frame(notebook)
+        notebook.add(new_tab, text=tab_name)
+        create_tab(new_tab, tab_name)
+
+        tab_list.append(new_tab)
+        notebook.select(new_tab)  # Focus on new tab
+        popup.destroy()
+
+    tk.Button(popup, text="Add Tab", command=confirm).pack(pady=10)
+
+def remove_tab(notebook:ttk.Notebook):
+    selected_tab = notebook.select()
+    if notebook.tab(selected_tab, 'text') == "Todo Checklist" or notebook.tab(selected_tab, 'text') == "Ideas":
+        messagebox.showerror("Error", "Cannot delete this tab")
+        return
+    notebook.forget(notebook.select())

@@ -1,22 +1,53 @@
 import tkinter as tk
-from utils import read_tasks, on_closing, add_task, create_task_row
+from tkinter import ttk
+from utils import read_tasks, on_closing, add_task, create_task_row, create_tab, tab_creator, remove_tab
 
-root = tk.Tk(screenName="Todo Tasks")
+def main():
+    parent = tk.Tk(screenName="Better Notepad")
 
-root.title("Tasks")
-root.minsize(500, 600)
+    parent.title("Better Notepad")
+    parent.minsize(500, 600)
+    notebook = ttk.Notebook(parent)
 
-tasks = {}
-read_tasks('tasks.txt', tasks)
+    menu_bar = tk.Menu(parent)
+    file_menu = tk.Menu(menu_bar, tearoff=0)
+    menu_bar.add_cascade(label='File', menu=file_menu)
 
-top_frame = tk.Frame(root)
-top_frame.pack(padx=5, pady=5, fill='x')
-tk.Label(top_frame, text="Tasks to do: ").pack(pady=10, side='left')
-add_button = tk.Button(top_frame, text='Add Task', command=lambda r=root, t=tasks: add_task(r, t)).pack(pady=10, side='right')
+    tab_list = []
 
-for task, val in tasks.items(): # make check boxes
-    create_task_row(task, val, root, tasks)
+    file_menu.add_command(label='New Tab', command=lambda tl=tab_list, f=parent, n=notebook: tab_creator(tl, f, n))
+    file_menu.add_command(label="Delete Tab", command=lambda: remove_tab(notebook))
+    parent.config(menu=menu_bar)    
+
+    todo_tab = ttk.Frame(notebook)
+    ideas_tab = ttk.Frame(notebook)
+    notebook.add(todo_tab, text="Todo Checklist")
+    notebook.add(ideas_tab, text="Ideas")
+    tab_list.extend([todo_tab, ideas_tab])
+
+
+    for tab in tab_list:
+        create_tab(tab, notebook.tab(tab, 'text'))
+
+    notebook.pack(padx=10, pady=10, fill="both", expand=True)
     
-root.protocol("WM_DELETE_WINDOW", lambda: on_closing(root, "tasks.txt", tasks))
-root.mainloop()
+    tasks = {}
+    read_tasks('data/tasks.txt', tasks)
 
+    top_frame = tk.Frame(todo_tab)
+
+    top_frame.pack(padx=5, pady=5, fill='x')
+    tk.Label(top_frame, text="Tasks to do: ").pack(pady=10, side='left')
+    add_button = tk.Button(top_frame, text='Add Task', command=lambda r=todo_tab, t=tasks: add_task(r, t)).pack(pady=10, side='right')
+
+    for task, val in tasks.items(): # make check boxes
+        create_task_row(task, val, todo_tab, tasks)
+
+
+
+        
+    parent.protocol("WM_DELETE_WINDOW", lambda: on_closing(parent, "data/tasks.txt", tasks))
+    parent.mainloop()
+
+if __name__ == "__main__":
+    main()
