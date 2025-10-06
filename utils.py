@@ -40,6 +40,10 @@ def startup(notebook:ttk.Notebook, tab_list, file_path):
             text = False
         create_tab(tab, tab_name, text, exists=True, file_path='data/'+tab_name+'.txt')
 
+    # Have tasks as first
+    notebook.insert(0, todo_tab)
+    notebook.select(todo_tab)
+
     return notebook, tab_list, todo_tab
 
 
@@ -146,7 +150,7 @@ def tab_creator(tab_list, parent, notebook):
         create_tab(new_tab, tab_name)
 
         tab_list.append(new_tab)
-        notebook.select(new_tab)  # Focus on new tab
+        notebook.select(new_tab)  # Open new tab
         popup.destroy()
 
     tk.Button(popup, text="Add Tab", command=confirm).pack(pady=10)
@@ -157,3 +161,11 @@ def remove_tab(notebook:ttk.Notebook):
         messagebox.showerror("Error", "Cannot delete this tab")
         return
     notebook.forget(notebook.select())
+
+def reorder(event, notebook):
+    try:
+        index = notebook.index(f"@{event.x},{event.y}")
+        notebook.insert(index, child=notebook.select())
+
+    except tk.TclError:
+        pass

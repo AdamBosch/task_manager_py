@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from utils import read_tasks, on_closing, add_task, create_task_row, create_tab, tab_creator, remove_tab, startup
+from utils import read_tasks, on_closing, add_task, create_task_row, create_tab, reorder, tab_creator, remove_tab, startup
 
 def main():
     parent = tk.Tk(screenName="Better Notepad")
@@ -22,6 +22,7 @@ def main():
     notebook, tab_list, todo_tab = startup(notebook, tab_list, "data/")
 
     notebook.pack(padx=10, pady=10, fill="both", expand=True)
+    notebook.bind("<B1-Motion>", lambda event: reorder(event, notebook))
     
     tasks = {}
     read_tasks('data/tasks.txt', tasks)
