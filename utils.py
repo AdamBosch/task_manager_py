@@ -1,4 +1,5 @@
 import tkinter as tk
+import os
 from tkinter import font, messagebox
 from tkinter import ttk
 
@@ -12,12 +13,61 @@ def read_tasks(file_path, tasks):
         task = task[1:]
         tasks[str(task)] = tk.IntVar(value=val)
 
+def read_text(file_path, text_box:tk.Text):
+    with open(file_path, 'r') as f:
+        text_box.insert("1.0", f.read())
 
-def on_closing(root:tk.Tk, file_path:str, tasks:dict):
-    with open(file_path, "w") as f:
-        for task, val in tasks.items():
-            line = '"' + task + '"' + ":" + (str(1) if val.get() else str(0)) + "\n"
-            f.write(line)
+
+def startup(notebook:ttk.Notebook, tab_list, file_path):
+
+    for dir in os.listdir(file_path):
+        text = dir[:-4]
+        if dir == "tasks.txt":
+            text = "Todo Checklist"
+            todo_tab = ttk.Frame(notebook)
+            notebook.add(todo_tab, text="Todo Checklist")
+            tab_list.append(todo_tab)
+        else:
+            new_tab = ttk.Frame(notebook)
+            tab_list.append(new_tab)
+            notebook.add(new_tab, text=text)
+
+    # Create the tabs
+    for tab in tab_list:
+        tab_name = notebook.tab(tab, 'text')
+        text = True
+        if tab_name == "Todo Checklist":
+            text = False
+        create_tab(tab, tab_name, text, exists=True, file_path='data/'+tab_name+'.txt')
+
+    return notebook, tab_list, todo_tab
+
+
+def on_closing(root:tk.Tk, file_path:str, notebook:ttk.Notebook, tasks:dict):
+    filelist = [ f for f in os.listdir(file_path) if f.endswith(".txt") ]
+    for f in filelist:
+        os.remove(os.path.join(file_path, f))
+
+    for tab_id in notebook.tabs():
+        tab_name = notebook.tab(tab_id, 'text')
+        tab_widget = notebook.nametowidget(tab_id)
+
+        # Todo Checklist
+        if tab_name == "Todo Checklist":
+            save_path = os.path.join(file_path, "tasks.txt")
+            with open(save_path, "w", encoding="utf-8") as f:
+                for task, val in tasks.items():
+                    f.write(f'"{task}":{1 if val.get() else 0}\n')
+
+        else:
+            # Text tabs
+            text_widgets = [child for child in tab_widget.winfo_children() if isinstance(child, tk.Text)]
+            if text_widgets:
+                text_widget = text_widgets[0]
+                content = text_widget.get("1.0", tk.END).strip()
+                save_path = os.path.join(file_path, f"{tab_name}.txt")
+                with open(save_path, "w", encoding="utf-8") as f:
+                    f.write(content)
     root.destroy()
 
 def cross_out_text(val: tk.IntVar, checkbox: tk.Checkbutton):
@@ -64,12 +114,15 @@ def create_task_row(task, val, root, tasks):
     remove_button.config(command=lambda t=task, c=checkbox, b=remove_button, f=frame: remove_task(t, c, b, f, tasks))
     remove_button.pack(side='right', padx=10)
 
-def create_tab(tab, text_var, text=True):
+def create_tab(tab, text_var, text=True, exists=False, file_path=None):
     label = ttk.Label(tab, text=text_var)
     label.pack(padx=20, pady=20)
     if text:
         input_text_area = tk.Text(tab, wrap='word', background='white', foreground='black')
         input_text_area.pack(fill='both', expand=True, padx=10, pady=10)
+
+        if exists:
+            read_text(file_path, input_text_area)
 
 def tab_creator(tab_list, parent, notebook):
     popup = tk.Toplevel(parent)
